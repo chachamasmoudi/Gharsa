@@ -2,9 +2,11 @@ package gharsa.controller;
 
 import gharsa.model.User;
 import gharsa.service.AuthService;
+import gharsa.service.TokenService;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class AuthController {
@@ -13,14 +15,17 @@ public class AuthController {
     public record LoginRequest(String email, String password) {}
 
     private final AuthService auth;
+    private final TokenService tokens;
 
-    public AuthController(AuthService auth) {
+    public AuthController(AuthService auth, TokenService tokens) {
         this.auth = auth;
+        this.tokens = tokens;
     }
 
     public void register(Javalin app) {
         app.post("/api/auth/register", this::handleRegister);
         app.post("/api/auth/login", this::handleLogin);
+        app.get("/api/me", this::handleMe);
     }
 
     private void handleRegister(Context ctx) {
@@ -38,8 +43,18 @@ public class AuthController {
     private void handleLogin(Context ctx) {
         LoginRequest req = ctx.bodyAsClass(LoginRequest.class);
         auth.login(req.email(), req.password()).ifPresentOrElse(
-                u -> ctx.json(toPublic(u)),
+                u -> {
+                    Map<String, Object> body = new HashMap<>(toPublic(u));
+                    body.put("token", tokens.create(u));
+                    ctx.json(body);
+                },
                 () -> ctx.status(401).json(Map.of("error", "Email ou mot de passe incorrect")));
+    }
+
+    private void handleMe(Context ctx) {
+        ctx.json(Map.of(
+                "userId", ctx.<Long>attribute("userId"),
+                "role", ctx.<String>attribute("role")));
     }
 
     private Map<String, Object> toPublic(User u) {
