@@ -1,6 +1,7 @@
 package gharsa.service;
 
 import gharsa.model.Plot;
+import gharsa.model.PlotData;
 import gharsa.repository.PlotRepository;
 
 import java.util.List;
@@ -14,12 +15,18 @@ public class PlotService {
         this.plots = plots;
     }
 
-    private void validate(String name, Double areaHa) {
-        if (name == null || name.isBlank()) {
+    private void validate(PlotData d) {
+        if (d == null || d.name() == null || d.name().isBlank()) {
             throw new IllegalArgumentException("Le nom de la parcelle est obligatoire");
         }
-        if (areaHa != null && areaHa < 0) {
-            throw new IllegalArgumentException("La surface ne peut pas être négative");
+        if (d.area() != null && d.area() < 0) {
+            throw new IllegalArgumentException("La superficie ne peut pas être négative");
+        }
+        if (d.latitude() != null && (d.latitude() < -90 || d.latitude() > 90)) {
+            throw new IllegalArgumentException("Latitude invalide (entre -90 et 90)");
+        }
+        if (d.longitude() != null && (d.longitude() < -180 || d.longitude() > 180)) {
+            throw new IllegalArgumentException("Longitude invalide (entre -180 et 180)");
         }
     }
 
@@ -31,14 +38,14 @@ public class PlotService {
         return plots.findByIdAndUser(id, userId);
     }
 
-    public Plot create(long userId, String name, Double areaHa, String crop, String location) {
-        validate(name, areaHa);
-        return plots.create(userId, name.trim(), areaHa, crop, location);
+    public Plot create(long userId, PlotData d) {
+        validate(d);
+        return plots.create(userId, d);
     }
 
-    public boolean update(long id, long userId, String name, Double areaHa, String crop, String location) {
-        validate(name, areaHa);
-        return plots.update(id, userId, name.trim(), areaHa, crop, location);
+    public boolean update(long id, long userId, PlotData d) {
+        validate(d);
+        return plots.update(id, userId, d);
     }
 
     public boolean delete(long id, long userId) {

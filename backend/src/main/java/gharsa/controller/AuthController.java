@@ -23,9 +23,9 @@ public class AuthController {
     }
 
     public void register(Javalin app) {
-        app.post("/api/auth/register", this::handleRegister);
-        app.post("/api/auth/login", this::handleLogin);
-        app.get("/api/me", this::handleMe);
+        app.post("/api/v1/auth/register", this::handleRegister);
+        app.post("/api/v1/auth/login", this::handleLogin);
+        app.get("/api/v1/me", this::handleMe);
     }
 
     private void handleRegister(Context ctx) {

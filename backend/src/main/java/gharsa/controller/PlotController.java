@@ -1,15 +1,15 @@
 package gharsa.controller;
 
 import gharsa.model.Plot;
+import gharsa.model.PlotData;
 import gharsa.service.PlotService;
 import io.javalin.Javalin;
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 
 import java.util.Map;
 
 public class PlotController {
-
-    public record PlotRequest(String name, Double areaHa, String crop, String location) {}
 
     private final PlotService plots;
 
@@ -18,11 +18,11 @@ public class PlotController {
     }
 
     public void register(Javalin app) {
-        app.get("/api/plots", this::list);
-        app.post("/api/plots", this::create);
-        app.get("/api/plots/{id}", this::get);
-        app.put("/api/plots/{id}", this::update);
-        app.delete("/api/plots/{id}", this::delete);
+        app.get("/api/v1/plots", this::list);
+        app.post("/api/v1/plots", this::create);
+        app.get("/api/v1/plots/{id}", this::get);
+        app.put("/api/v1/plots/{id}", this::update);
+        app.delete("/api/v1/plots/{id}", this::delete);
     }
 
     private long userId(Context ctx) {
@@ -33,7 +33,7 @@ public class PlotController {
         try {
             return Long.parseLong(ctx.pathParam("id"));
         } catch (NumberFormatException e) {
-            throw new io.javalin.http.BadRequestResponse("Identifiant invalide");
+            throw new BadRequestResponse("Identifiant invalide");
         }
     }
 
@@ -50,9 +50,9 @@ public class PlotController {
     }
 
     private void create(Context ctx) {
-        PlotRequest r = ctx.bodyAsClass(PlotRequest.class);
+        PlotData d = ctx.bodyAsClass(PlotData.class);
         try {
-            Plot p = plots.create(userId(ctx), r.name(), r.areaHa(), r.crop(), r.location());
+            Plot p = plots.create(userId(ctx), d);
             ctx.status(201).json(p);
         } catch (IllegalArgumentException e) {
             ctx.status(400).json(Map.of("error", e.getMessage()));
@@ -60,10 +60,10 @@ public class PlotController {
     }
 
     private void update(Context ctx) {
-        PlotRequest r = ctx.bodyAsClass(PlotRequest.class);
+        PlotData d = ctx.bodyAsClass(PlotData.class);
         long id = plotId(ctx);
         try {
-            if (plots.update(id, userId(ctx), r.name(), r.areaHa(), r.crop(), r.location())) {
+            if (plots.update(id, userId(ctx), d)) {
                 plots.get(id, userId(ctx)).ifPresent(ctx::json);
             } else {
                 notFound(ctx);

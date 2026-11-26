@@ -28,7 +28,7 @@ public class App {
         TokenService tokens = new TokenService();
         AuthFilter.register(app, tokens);
 
-        app.get("/api/health", ctx -> ctx.json(Map.of("status", "ok", "service", "gharsa-backend")));
+        app.get("/api/v1/health", ctx -> ctx.json(Map.of("status", "ok", "service", "gharsa-backend")));
         new AuthController(new AuthService(new UserRepository()), tokens).register(app);
         new PlotController(new PlotService(new PlotRepository())).register(app);
         app.start(7070);

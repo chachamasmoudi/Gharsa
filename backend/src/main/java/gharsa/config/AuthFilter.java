@@ -11,8 +11,8 @@ public class AuthFilter {
         app.before("/api/*", ctx -> {
             String path = ctx.path();
             if (ctx.method() == HandlerType.OPTIONS
-                    || path.startsWith("/api/auth/")
-                    || path.equals("/api/health")) {
+                    || path.startsWith("/api/v1/auth/")
+                    || path.equals("/api/v1/health")) {
                 return;
             }
             String header = ctx.header("Authorization");
