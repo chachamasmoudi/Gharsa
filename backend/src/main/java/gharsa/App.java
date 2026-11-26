@@ -10,6 +10,9 @@ import io.javalin.Javalin;
 
 import java.util.Map;
 
+import gharsa.controller.PlotController;
+import gharsa.repository.PlotRepository;
+import gharsa.service.PlotService;
 public class App {
 
     public static void main(String[] args) {
@@ -27,7 +30,7 @@ public class App {
 
         app.get("/api/health", ctx -> ctx.json(Map.of("status", "ok", "service", "gharsa-backend")));
         new AuthController(new AuthService(new UserRepository()), tokens).register(app);
-
+        new PlotController(new PlotService(new PlotRepository())).register(app);
         app.start(7070);
     }
 }
